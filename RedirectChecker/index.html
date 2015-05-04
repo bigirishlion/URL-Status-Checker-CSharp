@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>301 URL Checker</title>
+</head>
+<body>
+
+        <h2>Check URL Statuses</h2>
+        <p>Enter ULRs below (One Per Line)</p>
+    <form method="post">
+        <textarea id="urls" name="urls" rows="20" cols="100"></textarea>
+        <br />
+        <div id="submit">
+            <input type="button" value="Submit" onclick="find();" />
+        </div>
+    </form>
+
+    <div id="counter"></div>
+    <div id="returnHTML"></div>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        var uri = 'api/urls';
+        var splitURL;
+
+        function find(){
+            var urls = $('#urls').val();
+            $('#submit').html('<img src="images/loading.gif" style="width:250px;" />');
+
+            // call ajax for each url
+            splitURL = urls.split('\n');
+            callAjax(splitURL);
+            return false
+        }
+
+        function callAjax(urlArray) {
+            var counter = 0;
+            urlLength = urlArray.length;
+            var urls = urlArray;
+            $('#counter').append('<p><span class="num">' + counter + '</span> files complete out of ' + urlLength + '</p>');
+            $('#returnHTML').append('<table><tr><td>URL</td><td>Response</td></tr></table>');
+            function recursiveAjax() {
+                $.ajax({
+                    url: uri,
+                    type: 'POST',
+                    data: JSON.stringify({ Url: urls[counter]}),
+                    contentType: "application/json",
+                    success: function (HTML) {
+                        $('#submit').html(' ');
+                        if (counter < urlLength) {
+                            counter++;
+                            console.log(HTML);
+                            $('#counter .num').text(counter);
+                            $('#returnHTML table').append(HTML);
+                            recursiveAjax();
+                        }
+                    }
+                });
+            }
+            recursiveAjax();
+        }
+
+        /*$(document).ready(function () {
+            // Send an AJAX request
+            $.getJSON(uri)
+                .done(function (data) {
+                    // On success, 'data' contains a list of products.
+                    $.each(data, function (key, item) {
+                        // Add a list item for the product.
+                        $('<li>', { text: formatItem(item) }).appendTo($('#products'));
+                    });
+                });
+        });
+
+        function formatItem(item) {
+            return item.Name + ': $' + item.Price;
+        }
+
+        function find() {
+            var id = $('#prodId').val();
+            $.getJSON(uri + '/' + id)
+                .done(function (data) {
+                    $('#product').text(formatItem(data));
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#product').text('Error: ' + err);
+                });
+        }*/
+    </script>
+</body>
+</html>
